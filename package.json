@@ -8,15 +8,20 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test:once": "vitest run",
+    "test:debug": "vitest --inspect-brk --no-file-parallelism",
+    "test:coverage": "vitest run --coverage --coverage.reporter=text"
   },
   "dependencies": {
     "@clerk/react": "6.9.0",
+    "@edge-runtime/vm": "^5.0.0",
     "@fontsource-variable/geist": "^5.2.9",
     "@tailwindcss/vite": "^4.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.41.0",
+    "convex-test": "^0.0.53",
     "lucide-react": "^1.18.0",
     "radix-ui": "^1.5.0",
     "react": "^19.2.6",
