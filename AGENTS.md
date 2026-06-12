@@ -11,3 +11,9 @@ Convex agent skills for common tasks can be installed by running
 `npx convex ai-files install`.
 
 <!-- convex-ai-end -->
+
+Always use ShadCN UI components to build out any UI
+
+Make sure to always ask for permission before installing any new dependencies
+
+ALways use tailwind css for styling
