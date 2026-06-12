@@ -9,13 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BrandMark } from "@/components/layout/brand-mark";
 
 function SignedOutView() {
   return (
     <section className="mx-auto grid min-h-svh w-full max-w-5xl items-center gap-6 px-5 py-10 md:grid-cols-[1fr_360px]">
       <div className="grid gap-6">
-        <BrandMark />
         <div className="max-w-2xl">
           <p className="text-sm font-medium text-[#1f7a5a]">HanziFlow</p>
           <h1 className="mt-3 text-5xl font-semibold tracking-normal text-balance sm:text-6xl">

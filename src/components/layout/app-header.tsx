@@ -6,7 +6,7 @@ function AppHeader() {
       <div>
         <h1 className="text-2xl font-semibold tracking-normal">HanziFlow</h1>
         <p className="text-muted-foreground text-sm">
-          Create a deck to start building flashcards.
+          Your study decks, organized for steady character practice.
         </p>
       </div>
       <UserButton />
