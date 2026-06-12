@@ -12,8 +12,31 @@ Convex agent skills for common tasks can be installed by running
 
 <!-- convex-ai-end -->
 
-Always use ShadCN UI components to build out any UI
+# Project Instructions
 
-Make sure to always ask for permission before installing any new dependencies
+## Product
 
-ALways use tailwind css for styling
+- The app is named HanziFlow.
+- Use HanziFlow consistently in user-facing app copy, titles, and documentation.
+
+## Frontend
+
+- Always use Tailwind CSS for styling.
+- Always use shadcn/ui components for UI building blocks.
+- Keep component file names in kebab case, for example `deck-list.tsx` or `create-deck-form.tsx`.
+- Prefer small, focused components over large mixed-responsibility files.
+
+## TypeScript
+
+- Never use TypeScript `any`.
+- Prefer explicit types, inferred generics, `unknown`, discriminated unions, and Convex generated types instead.
+
+## Testing
+
+- Always write tests for any new feature.
+- Use Vitest for tests.
+- Prefer focused unit tests over long integration tests.
+
+## Dependencies
+
+- Always ask for permission before installing new dependencies.
