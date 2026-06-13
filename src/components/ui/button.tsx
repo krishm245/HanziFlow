@@ -64,4 +64,6 @@ function Button({
   )
 }
 
+// shadcn/ui exports variants next to the component for reuse in composed controls.
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

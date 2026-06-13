@@ -1,5 +1,7 @@
-import { BookOpen, Loader2 } from "lucide-react";
+import { BookOpen, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { useMutation } from "convex/react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,15 +9,36 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Doc } from "../../../convex/_generated/dataModel";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { api } from "../../../convex/_generated/api";
+import type { Doc, Id } from "../../../convex/_generated/dataModel";
+import { DeleteDeckDialog } from "./delete-deck-dialog";
 import { formatCardCount } from "./deck-display";
+import { RenameDeckDialog } from "./rename-deck-dialog";
 
 type DeckListProps = {
   action: React.ReactNode;
   decks: Array<Doc<"decks">> | undefined;
 };
 
+type RenameDeck = (args: {
+  deckId: Id<"decks">;
+  name: string;
+}) => Promise<unknown>;
+
+type RemoveDeck = (args: { deckId: Id<"decks"> }) => Promise<unknown>;
+
 function DeckList({ action, decks }: DeckListProps) {
+  const renameDeck = useMutation(api.decks.rename);
+  const removeDeck = useMutation(api.decks.remove);
+
   return (
     <section className="grid gap-4">
       <div className="flex items-center justify-between gap-4">
@@ -40,7 +63,12 @@ function DeckList({ action, decks }: DeckListProps) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {decks.map((deck) => (
-            <DeckCard deck={deck} key={deck._id} />
+            <DeckCard
+              deck={deck}
+              key={deck._id}
+              onRemoveDeck={removeDeck}
+              onRenameDeck={renameDeck}
+            />
           ))}
         </div>
       )}
@@ -48,12 +76,27 @@ function DeckList({ action, decks }: DeckListProps) {
   );
 }
 
-function DeckCard({ deck }: { deck: Doc<"decks"> }) {
+function DeckCard({
+  deck,
+  onRemoveDeck,
+  onRenameDeck,
+}: {
+  deck: Doc<"decks">;
+  onRemoveDeck: RemoveDeck;
+  onRenameDeck: RenameDeck;
+}) {
   return (
     <Card className="min-h-44 border-[#d8e7df] shadow-sm transition-colors hover:border-[#91b8a7] hover:bg-[#f6fbf8]">
       <CardHeader className="pb-3">
-        <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-[#e7f3ed] text-[#183d32]">
-          <BookOpen className="size-5" />
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-[#e7f3ed] text-[#183d32]">
+            <BookOpen className="size-5" />
+          </div>
+          <DeckActions
+            deck={deck}
+            onRemoveDeck={onRemoveDeck}
+            onRenameDeck={onRenameDeck}
+          />
         </div>
         <CardTitle className="truncate text-lg">{deck.name}</CardTitle>
         <CardDescription>{formatCardCount(deck.cardCount)}</CardDescription>
@@ -70,4 +113,52 @@ function DeckCard({ deck }: { deck: Doc<"decks"> }) {
   );
 }
 
-export { DeckList };
+function DeckActions({
+  deck,
+  onRemoveDeck,
+  onRenameDeck,
+}: {
+  deck: Doc<"decks">;
+  onRemoveDeck: RemoveDeck;
+  onRenameDeck: RenameDeck;
+}) {
+  return (
+    <RenameDeckDialog deck={deck} onRenameDeck={onRenameDeck}>
+      {({ openRenameDialog }) => (
+        <DeleteDeckDialog deck={deck} onRemoveDeck={onRemoveDeck}>
+          {({ openDeleteDialog }) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label={`Manage ${deck.name}`}
+                  className="text-[#49675b] hover:bg-[#e7f3ed] hover:text-[#183d32]"
+                  size="icon"
+                  variant="ghost"
+                >
+                  <MoreHorizontal />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Deck actions</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={openRenameDialog}>
+                  <Pencil />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={openDeleteDialog}
+                  variant="destructive"
+                >
+                  <Trash2 />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </DeleteDeckDialog>
+      )}
+    </RenameDeckDialog>
+  );
+}
+
+export { DeckCard, DeckList };

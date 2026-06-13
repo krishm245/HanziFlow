@@ -6,11 +6,13 @@ export default defineSchema({
     ownerId: v.string(),
     name: v.string(),
     cardCount: v.number(),
+    deletingAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_ownerId", ["ownerId"])
-    .index("by_ownerId_and_name", ["ownerId", "name"]),
+    .index("by_ownerId_and_name", ["ownerId", "name"])
+    .index("by_ownerId_and_deletingAt", ["ownerId", "deletingAt"]),
 
   cards: defineTable({
     ownerId: v.string(),
