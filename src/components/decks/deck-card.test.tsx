@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import { DeckCard } from "./deck-list";
@@ -23,6 +24,34 @@ function createDeck(overrides: Partial<Doc<"decks">> = {}): Doc<"decks"> {
   };
 }
 
+function renderDeckCard({
+  deck = createDeck(),
+  removeDeck = vi.fn(async () => {}),
+  renameDeck = vi.fn(async () => {}),
+}: {
+  deck?: Doc<"decks">;
+  removeDeck?: (args: { deckId: Id<"decks"> }) => Promise<unknown>;
+  renameDeck?: (args: {
+    deckId: Id<"decks">;
+    name: string;
+  }) => Promise<unknown>;
+} = {}) {
+  render(
+    <MemoryRouter>
+      <DeckCard
+        deck={deck}
+        onRemoveDeck={removeDeck}
+        onRenameDeck={renameDeck}
+      />
+    </MemoryRouter>,
+  );
+}
+
+function LocationDisplay() {
+  const location = useLocation();
+  return <div data-testid="location">{location.pathname}</div>;
+}
+
 describe("DeckCard", () => {
   it("renames a deck from the actions menu", async () => {
     const user = userEvent.setup();
@@ -30,13 +59,7 @@ describe("DeckCard", () => {
     const removeDeck = vi.fn(async () => {});
     const deck = createDeck();
 
-    render(
-      <DeckCard
-        deck={deck}
-        onRemoveDeck={removeDeck}
-        onRenameDeck={renameDeck}
-      />,
-    );
+    renderDeckCard({ deck, removeDeck, renameDeck });
 
     await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
     await user.click(screen.getByText("Rename"));
@@ -60,13 +83,7 @@ describe("DeckCard", () => {
     const renameDeck = vi.fn(async () => {});
     const removeDeck = vi.fn(async () => {});
 
-    render(
-      <DeckCard
-        deck={createDeck()}
-        onRemoveDeck={removeDeck}
-        onRenameDeck={renameDeck}
-      />,
-    );
+    renderDeckCard({ removeDeck, renameDeck });
 
     await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
     await user.click(screen.getByText("Rename"));
@@ -83,13 +100,7 @@ describe("DeckCard", () => {
     const removeDeck = vi.fn(async () => {});
     const deck = createDeck({ cardCount: 1 });
 
-    render(
-      <DeckCard
-        deck={deck}
-        onRemoveDeck={removeDeck}
-        onRenameDeck={renameDeck}
-      />,
-    );
+    renderDeckCard({ deck, removeDeck, renameDeck });
 
     await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
     await user.click(screen.getByText("Delete"));
@@ -112,18 +123,44 @@ describe("DeckCard", () => {
     const renameDeck = vi.fn(async () => {});
     const removeDeck = vi.fn(async () => {});
 
-    render(
-      <DeckCard
-        deck={createDeck()}
-        onRemoveDeck={removeDeck}
-        onRenameDeck={renameDeck}
-      />,
-    );
+    renderDeckCard({ removeDeck, renameDeck });
 
     await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
     await user.click(screen.getByText("Delete"));
     await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(removeDeck).not.toHaveBeenCalled();
+  });
+
+  it("navigates to the deck route", async () => {
+    const user = userEvent.setup();
+    const deck = createDeck();
+
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Routes>
+          <Route
+            element={
+              <>
+                <DeckCard
+                  deck={deck}
+                  onRemoveDeck={async () => {}}
+                  onRenameDeck={async () => {}}
+                />
+                <LocationDisplay />
+              </>
+            }
+            path="/"
+          />
+          <Route element={<LocationDisplay />} path="/decks/:deckId" />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("link", { name: "Open HSK 1 verbs" }));
+
+    expect(screen.getByTestId("location").textContent).toBe(
+      `/decks/${deck._id}`,
+    );
   });
 });

@@ -73,6 +73,45 @@ describe("decks.create", () => {
   });
 });
 
+describe("decks.get", () => {
+  it("returns an owned deck", async () => {
+    const t = convexTest(schema, modules);
+    const authed = t.withIdentity({ tokenIdentifier: ownerId });
+    const deckId = await authed.mutation(api.decks.create, {
+      name: "HSK 1 verbs",
+    });
+
+    const deck = await authed.query(api.decks.get, { deckId });
+
+    expect(deck?.name).toBe("HSK 1 verbs");
+    expect(deck?.ownerId).toBe(ownerId);
+  });
+
+  it("rejects unauthenticated deck reads", async () => {
+    const t = convexTest(schema, modules);
+    const deckId = await t
+      .withIdentity({ tokenIdentifier: ownerId })
+      .mutation(api.decks.create, { name: "HSK 1 verbs" });
+
+    await expect(t.query(api.decks.get, { deckId })).rejects.toThrow(
+      "You must be signed in.",
+    );
+  });
+
+  it("returns null for decks owned by another user", async () => {
+    const t = convexTest(schema, modules);
+    const deckId = await t
+      .withIdentity({ tokenIdentifier: ownerId })
+      .mutation(api.decks.create, { name: "HSK 1 verbs" });
+
+    const deck = await t
+      .withIdentity({ tokenIdentifier: otherOwnerId })
+      .query(api.decks.get, { deckId });
+
+    expect(deck).toBeNull();
+  });
+});
+
 describe("decks.rename", () => {
   it("renames a deck owned by the authenticated user", async () => {
     const t = convexTest(schema, modules);

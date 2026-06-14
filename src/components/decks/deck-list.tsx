@@ -1,5 +1,6 @@
 import { BookOpen, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useMutation } from "convex/react";
+import { Link } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -102,6 +103,13 @@ function DeckCard({
         <CardDescription>{formatCardCount(deck.cardCount)}</CardDescription>
       </CardHeader>
       <CardContent className="mt-auto">
+        <Link
+          aria-label={`Open ${deck.name}`}
+          className="focus-visible:ring-ring -mx-2 mb-4 block rounded-lg px-2 py-1 text-sm font-medium text-[#183d32] outline-none transition-colors hover:text-[#245747] focus-visible:ring-3"
+          to={`/decks/${deck._id}`}
+        >
+          Open deck
+        </Link>
         <div className="flex items-center justify-between border-t border-[#d8e7df] pt-4 text-xs text-[#49675b]">
           <span>Last updated</span>
           <time dateTime={new Date(deck.updatedAt).toISOString()}>

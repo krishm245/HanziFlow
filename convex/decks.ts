@@ -39,7 +39,11 @@ function cleanName(name: string) {
   return trimmed;
 }
 
-async function findDeckWithName(ctx: QueryCtx | MutationCtx, ownerId: string, name: string) {
+async function findDeckWithName(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: string,
+  name: string,
+) {
   return await ctx.db
     .query("decks")
     .withIndex("by_ownerId_and_name", (q) =>
@@ -92,6 +96,22 @@ export const list = query({
       )
       .order("desc")
       .take(100);
+  },
+});
+
+export const get = query({
+  args: {
+    deckId: v.id("decks"),
+  },
+  handler: async (ctx, args) => {
+    const ownerId = await requireOwnerId(ctx);
+    const deck = await ctx.db.get(args.deckId);
+
+    if (!deck || deck.ownerId !== ownerId || deck.deletingAt) {
+      return null;
+    }
+
+    return deck;
   },
 });
 
