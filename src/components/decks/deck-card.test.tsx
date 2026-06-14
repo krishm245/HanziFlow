@@ -132,7 +132,7 @@ describe("DeckCard", () => {
     expect(removeDeck).not.toHaveBeenCalled();
   });
 
-  it("navigates to the deck route", async () => {
+  it("navigates to the deck route while keeping actions isolated", async () => {
     const user = userEvent.setup();
     const deck = createDeck();
 
@@ -157,6 +157,11 @@ describe("DeckCard", () => {
       </MemoryRouter>,
     );
 
+    await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
+
+    expect(screen.getByTestId("location").textContent).toBe("/");
+
+    await user.keyboard("{Escape}");
     await user.click(screen.getByRole("link", { name: "Open HSK 1 verbs" }));
 
     expect(screen.getByTestId("location").textContent).toBe(

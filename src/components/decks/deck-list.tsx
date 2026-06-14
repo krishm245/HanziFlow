@@ -87,29 +87,29 @@ function DeckCard({
   onRenameDeck: RenameDeck;
 }) {
   return (
-    <Card className="min-h-44 border-[#d8e7df] shadow-sm transition-colors hover:border-[#91b8a7] hover:bg-[#f6fbf8]">
-      <CardHeader className="pb-3">
+    <Card className="relative min-h-44 border-[#d8e7df] shadow-sm transition-colors hover:border-[#91b8a7] hover:bg-[#f6fbf8]">
+      <Link
+        aria-label={`Open ${deck.name}`}
+        className="focus-visible:ring-ring absolute inset-0 z-10 rounded-lg outline-none focus-visible:ring-3"
+        to={`/decks/${deck._id}`}
+      />
+      <CardHeader className="pointer-events-none relative z-20 pb-3">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-[#e7f3ed] text-[#183d32]">
             <BookOpen className="size-5" />
           </div>
-          <DeckActions
-            deck={deck}
-            onRemoveDeck={onRemoveDeck}
-            onRenameDeck={onRenameDeck}
-          />
+          <div className="pointer-events-auto">
+            <DeckActions
+              deck={deck}
+              onRemoveDeck={onRemoveDeck}
+              onRenameDeck={onRenameDeck}
+            />
+          </div>
         </div>
         <CardTitle className="truncate text-lg">{deck.name}</CardTitle>
         <CardDescription>{formatCardCount(deck.cardCount)}</CardDescription>
       </CardHeader>
-      <CardContent className="mt-auto">
-        <Link
-          aria-label={`Open ${deck.name}`}
-          className="focus-visible:ring-ring -mx-2 mb-4 block rounded-lg px-2 py-1 text-sm font-medium text-[#183d32] outline-none transition-colors hover:text-[#245747] focus-visible:ring-3"
-          to={`/decks/${deck._id}`}
-        >
-          Open deck
-        </Link>
+      <CardContent className="pointer-events-none relative z-20 mt-auto">
         <div className="flex items-center justify-between border-t border-[#d8e7df] pt-4 text-xs text-[#49675b]">
           <span>Last updated</span>
           <time dateTime={new Date(deck.updatedAt).toISOString()}>
@@ -139,7 +139,7 @@ function DeckActions({
               <DropdownMenuTrigger asChild>
                 <Button
                   aria-label={`Manage ${deck.name}`}
-                  className="text-[#49675b] hover:bg-[#e7f3ed] hover:text-[#183d32]"
+                  className="relative z-10 text-[#49675b] hover:bg-[#e7f3ed] hover:text-[#183d32]"
                   size="icon"
                   variant="ghost"
                 >
