@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -78,6 +78,60 @@ describe("AddCardTemplate", () => {
     expect(screen.getByRole("alert").textContent).toBe("Enter pinyin.");
     expect(createCard).not.toHaveBeenCalled();
   });
+
+  it("shows, hides, and uses the pinyin keyboard", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AddCardTemplate
+        deckId={"deck_123" as Id<"decks">}
+        onCreateCard={async () => {}}
+      />,
+    );
+
+    expect(screen.getByText("Pinyin keyboard")).not.toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Insert ǚ" }));
+    await user.click(screen.getByRole("button", { name: "Insert space" }));
+    await user.click(screen.getByRole("button", { name: "Insert apostrophe" }));
+
+    expect((screen.getByLabelText("Pinyin") as HTMLInputElement).value).toBe(
+      "ǚ '",
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Hide pinyin keyboard" }),
+    );
+    expect(screen.queryByRole("button", { name: "Insert ǚ" })).toBeNull();
+
+    await user.click(
+      screen.getByRole("button", { name: "Show pinyin keyboard" }),
+    );
+    expect(screen.getByRole("button", { name: "Insert ǚ" })).not.toBeNull();
+  });
+
+  it("inserts keyboard text at the pinyin cursor", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AddCardTemplate
+        deckId={"deck_123" as Id<"decks">}
+        onCreateCard={async () => {}}
+      />,
+    );
+
+    const pinyinInput = screen.getByLabelText("Pinyin") as HTMLInputElement;
+    await user.type(pinyinInput, "xue");
+    pinyinInput.setSelectionRange(1, 2);
+
+    await user.click(screen.getByRole("button", { name: "Insert ǚ" }));
+
+    expect(pinyinInput.value).toBe("xǚe");
+    await waitFor(() => {
+      expect(pinyinInput.selectionStart).toBe(2);
+      expect(document.activeElement).toBe(pinyinInput);
+    });
+  });
 });
 
 describe("CardRow", () => {
@@ -109,6 +163,31 @@ describe("CardRow", () => {
     });
     expect(removeCard).not.toHaveBeenCalled();
     expect(toastSuccess).toHaveBeenCalledWith("Card updated");
+  });
+
+  it("uses the pinyin keyboard while editing a card", async () => {
+    const user = userEvent.setup();
+    const updateCard = vi.fn(async () => {});
+
+    render(
+      <CardRow
+        card={createCard()}
+        onRemoveCard={async () => {}}
+        onUpdateCard={updateCard}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit xue" }));
+    await user.clear(screen.getByLabelText("Pinyin"));
+    await user.click(screen.getByRole("button", { name: "Insert ā" }));
+    await user.click(screen.getByRole("button", { name: "Backspace" }));
+    await user.click(screen.getByRole("button", { name: "Insert á" }));
+    await user.click(screen.getByRole("button", { name: "Clear pinyin" }));
+    await user.click(screen.getByRole("button", { name: "Insert ǎ" }));
+
+    expect((screen.getByLabelText("Pinyin") as HTMLInputElement).value).toBe(
+      "ǎ",
+    );
   });
 
   it("cancels inline edits", async () => {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Loader2, Pencil, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import { formatReviewStatus, getCardFieldError } from "./card-display";
 import { DeleteCardDialog } from "./delete-card-dialog";
+import { PinyinKeyboard } from "./pinyin-keyboard";
 
 type UpdateCard = (args: {
   cardId: Id<"cards">;
@@ -32,6 +33,7 @@ type CardRowProps = {
 };
 
 function CardRow({ card, onRemoveCard, onUpdateCard }: CardRowProps) {
+  const pinyinInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [pinyin, setPinyin] = useState(card.pinyin);
   const [english, setEnglish] = useState(card.english);
@@ -93,6 +95,7 @@ function CardRow({ card, onRemoveCard, onUpdateCard }: CardRowProps) {
                 <Label htmlFor={`card-${card._id}-pinyin`}>Pinyin</Label>
                 <Input
                   id={`card-${card._id}-pinyin`}
+                  ref={pinyinInputRef}
                   value={pinyin}
                   onChange={(event) => setPinyin(event.target.value)}
                   autoComplete="off"
@@ -115,6 +118,12 @@ function CardRow({ card, onRemoveCard, onUpdateCard }: CardRowProps) {
                 />
               </div>
             </div>
+
+            <PinyinKeyboard
+              inputRef={pinyinInputRef}
+              onValueChange={setPinyin}
+              value={pinyin}
+            />
 
             {error ? (
               <p className="text-destructive text-sm" role="alert">

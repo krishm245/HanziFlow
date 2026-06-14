@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { getCardFieldError } from "./card-display";
+import { PinyinKeyboard } from "./pinyin-keyboard";
 
 type CreateCard = (args: {
   deckId: Id<"decks">;
@@ -28,6 +29,7 @@ type AddCardTemplateProps = {
 };
 
 function AddCardTemplate({ deckId, onCreateCard }: AddCardTemplateProps) {
+  const pinyinInputRef = useRef<HTMLInputElement>(null);
   const [pinyin, setPinyin] = useState("");
   const [english, setEnglish] = useState("");
   const [error, setError] = useState("");
@@ -68,7 +70,7 @@ function AddCardTemplate({ deckId, onCreateCard }: AddCardTemplateProps) {
       <CardHeader>
         <CardTitle className="text-lg">Add card</CardTitle>
         <CardDescription>
-          Start with pinyin now. The custom keyboard comes next.
+          Type pinyin directly or use the on-screen tone keyboard.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -78,6 +80,7 @@ function AddCardTemplate({ deckId, onCreateCard }: AddCardTemplateProps) {
               <Label htmlFor="new-card-pinyin">Pinyin</Label>
               <Input
                 id="new-card-pinyin"
+                ref={pinyinInputRef}
                 value={pinyin}
                 onChange={(event) => setPinyin(event.target.value)}
                 placeholder="xue"
@@ -98,6 +101,12 @@ function AddCardTemplate({ deckId, onCreateCard }: AddCardTemplateProps) {
               />
             </div>
           </div>
+
+          <PinyinKeyboard
+            inputRef={pinyinInputRef}
+            onValueChange={setPinyin}
+            value={pinyin}
+          />
 
           {error ? (
             <p className="text-destructive text-sm" role="alert">
