@@ -149,7 +149,8 @@ describe("CardRow", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Edit xue" }));
+    await user.click(screen.getByRole("button", { name: "Manage xue" }));
+    await user.click(screen.getByText("Edit"));
     await user.clear(screen.getByLabelText("Pinyin"));
     await user.type(screen.getByLabelText("Pinyin"), "  kan  ");
     await user.clear(screen.getByLabelText("English meaning"));
@@ -177,7 +178,8 @@ describe("CardRow", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Edit xue" }));
+    await user.click(screen.getByRole("button", { name: "Manage xue" }));
+    await user.click(screen.getByText("Edit"));
     await user.clear(screen.getByLabelText("Pinyin"));
     await user.click(screen.getByRole("button", { name: "Insert ā" }));
     await user.click(screen.getByRole("button", { name: "Backspace" }));
@@ -202,7 +204,8 @@ describe("CardRow", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Edit xue" }));
+    await user.click(screen.getByRole("button", { name: "Manage xue" }));
+    await user.click(screen.getByText("Edit"));
     await user.clear(screen.getByLabelText("Pinyin"));
     await user.type(screen.getByLabelText("Pinyin"), "kan");
     await user.click(screen.getByRole("button", { name: "Cancel" }));
@@ -224,7 +227,8 @@ describe("CardRow", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Delete xue" }));
+    await user.click(screen.getByRole("button", { name: "Manage xue" }));
+    await user.click(screen.getByText("Delete"));
 
     expect(
       screen.getByText('Delete "xue" - study. This cannot be undone.'),

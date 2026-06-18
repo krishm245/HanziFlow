@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Loader2, Pencil, Save, Trash2, X } from "lucide-react";
+import { Loader2, MoreHorizontal, Pencil, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
@@ -87,7 +95,7 @@ function CardRow({ card, onRemoveCard, onUpdateCard }: CardRowProps) {
 
   if (isEditing) {
     return (
-      <Card className="border-[#91b8a7] shadow-sm">
+      <Card className="h-full w-full border-[#91b8a7] shadow-sm">
         <CardContent className="pt-5">
           <form className="grid gap-4" onSubmit={handleUpdateCard}>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -152,8 +160,8 @@ function CardRow({ card, onRemoveCard, onUpdateCard }: CardRowProps) {
   }
 
   return (
-    <Card className="border-[#d8e7df] shadow-sm">
-      <CardHeader className="gap-4 sm:flex sm:flex-row sm:items-start sm:justify-between">
+    <Card className="h-full w-full border-[#d8e7df] shadow-sm">
+      <CardHeader className="gap-4">
         <div className="min-w-0">
           <CardTitle className="truncate text-xl text-[#183d32]">
             {card.pinyin}
@@ -162,33 +170,14 @@ function CardRow({ card, onRemoveCard, onUpdateCard }: CardRowProps) {
             {card.english}
           </CardDescription>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Button
-            aria-label={`Edit ${card.pinyin}`}
-            onClick={startEditing}
-            size="icon"
-            type="button"
-            variant="outline"
-          >
-            <Pencil />
-          </Button>
-          <DeleteCardDialog card={card} onRemoveCard={onRemoveCard}>
-            {({ openDeleteDialog }) => (
-              <Button
-                aria-label={`Delete ${card.pinyin}`}
-                onClick={openDeleteDialog}
-                size="icon"
-                type="button"
-                variant="destructive"
-              >
-                <Trash2 />
-              </Button>
-            )}
-          </DeleteCardDialog>
-        </div>
+        <CardActions
+          card={card}
+          onRemoveCard={onRemoveCard}
+          onStartEditing={startEditing}
+        />
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#d8e7df] pt-4 text-xs text-[#49675b]">
+        <div className="grid gap-2 border-t border-[#d8e7df] pt-4 text-xs text-[#49675b]">
           <span>
             {formatReviewStatus(
               card.knownCount,
@@ -202,6 +191,53 @@ function CardRow({ card, onRemoveCard, onUpdateCard }: CardRowProps) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CardActions({
+  card,
+  onRemoveCard,
+  onStartEditing,
+}: {
+  card: Doc<"cards">;
+  onRemoveCard: RemoveCard;
+  onStartEditing: () => void;
+}) {
+  return (
+    <div className="flex justify-end">
+      <DeleteCardDialog card={card} onRemoveCard={onRemoveCard}>
+        {({ openDeleteDialog }) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                aria-label={`Manage ${card.pinyin}`}
+                className="text-[#49675b] hover:bg-[#e7f3ed] hover:text-[#183d32]"
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Card actions</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={onStartEditing}>
+                <Pencil />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={openDeleteDialog}
+                variant="destructive"
+              >
+                <Trash2 />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </DeleteCardDialog>
+    </div>
   );
 }
 

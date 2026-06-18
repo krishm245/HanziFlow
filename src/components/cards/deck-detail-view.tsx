@@ -81,9 +81,6 @@ function DeckDetailView() {
           <section className="grid gap-3">
             <div>
               <h2 className="text-lg font-semibold">Cards</h2>
-              <p className="text-muted-foreground text-sm">
-                Newest cards appear first.
-              </p>
             </div>
             <CardList
               cards={cards}

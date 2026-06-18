@@ -36,7 +36,7 @@ function CardList({ cards, onRemoveCard, onUpdateCard }: CardListProps) {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(17rem,20rem))] justify-start gap-4">
       {cards.map((card) => (
         <CardRow
           card={card}

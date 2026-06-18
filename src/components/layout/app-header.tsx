@@ -5,9 +5,6 @@ function AppHeader() {
     <header className="flex min-h-14 items-center justify-between gap-4 border-b border-[#d8e7df] pb-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-normal">HanziFlow</h1>
-        <p className="text-muted-foreground text-sm">
-          Your study decks, organized for steady character practice.
-        </p>
       </div>
       <UserButton />
     </header>
