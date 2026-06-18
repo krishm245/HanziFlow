@@ -168,3 +168,48 @@ describe("cards.remove", () => {
     ).rejects.toThrow("Card not found.");
   });
 });
+
+describe("cards.recordReview", () => {
+  it("records known and needs-practice outcomes", async () => {
+    const { authed, deckId, t } = await createOwnedDeck();
+    const cardId = await authed.mutation(api.cards.create, {
+      deckId,
+      pinyin: "xue",
+      english: "study",
+    });
+
+    await authed.mutation(api.cards.recordReview, {
+      cardId,
+      result: "needsPractice",
+    });
+    await authed.mutation(api.cards.recordReview, {
+      cardId,
+      result: "known",
+    });
+
+    const card = await t.run(async (ctx) => await ctx.db.get(cardId));
+
+    expect(card?.knownCount).toBe(1);
+    expect(card?.needsPracticeCount).toBe(1);
+    expect(card?.lastReviewResult).toBe("known");
+    expect(card?.lastReviewedAt).toEqual(expect.any(Number));
+  });
+
+  it("blocks cross-user review recording", async () => {
+    const { authed, deckId, t } = await createOwnedDeck();
+    const cardId = await authed.mutation(api.cards.create, {
+      deckId,
+      pinyin: "xue",
+      english: "study",
+    });
+
+    await expect(
+      t
+        .withIdentity({ tokenIdentifier: otherOwnerId })
+        .mutation(api.cards.recordReview, {
+          cardId,
+          result: "known",
+        }),
+    ).rejects.toThrow("Card not found.");
+  });
+});

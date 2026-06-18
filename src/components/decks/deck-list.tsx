@@ -1,6 +1,13 @@
-import { BookOpen, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Play,
+  Trash2,
+} from "lucide-react";
 import { useMutation } from "convex/react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -130,6 +137,8 @@ function DeckActions({
   onRemoveDeck: RemoveDeck;
   onRenameDeck: RenameDeck;
 }) {
+  const navigate = useNavigate();
+
   return (
     <RenameDeckDialog deck={deck} onRenameDeck={onRenameDeck}>
       {({ openRenameDialog }) => (
@@ -148,6 +157,14 @@ function DeckActions({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Deck actions</DropdownMenuLabel>
+                <DropdownMenuItem
+                  disabled={deck.cardCount === 0}
+                  onSelect={() => navigate(`/decks/${deck._id}/review`)}
+                >
+                  <Play />
+                  Review
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={openRenameDialog}>
                   <Pencil />
                   Rename

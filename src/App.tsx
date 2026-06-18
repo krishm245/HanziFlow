@@ -10,6 +10,7 @@ import { FullPageMessage } from "@/components/auth/full-page-message";
 import { DeckDetailView } from "@/components/cards/deck-detail-view";
 import { SignedOutView } from "@/components/auth/signed-out-view";
 import { DecksView } from "@/components/decks/decks-view";
+import { DeckReviewView } from "@/components/review/deck-review-view";
 import { Toaster } from "@/components/ui/sonner";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route element={<DecksView />} path="/" />
             <Route element={<DeckDetailView />} path="/decks/:deckId" />
+            <Route element={<DeckReviewView />} path="/decks/:deckId/review" />
           </Routes>
         </BrowserRouter>
         <Toaster />

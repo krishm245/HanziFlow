@@ -168,4 +168,52 @@ describe("DeckCard", () => {
       `/decks/${deck._id}`,
     );
   });
+
+  it("navigates to the review route from the actions menu", async () => {
+    const user = userEvent.setup();
+    const deck = createDeck();
+
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Routes>
+          <Route
+            element={
+              <>
+                <DeckCard
+                  deck={deck}
+                  onRemoveDeck={async () => {}}
+                  onRenameDeck={async () => {}}
+                />
+                <LocationDisplay />
+              </>
+            }
+            path="/"
+          />
+          <Route element={<LocationDisplay />} path="/decks/:deckId/review" />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
+    await user.click(screen.getByText("Review"));
+
+    expect(screen.getByTestId("location").textContent).toBe(
+      `/decks/${deck._id}/review`,
+    );
+  });
+
+  it("disables review for empty decks", async () => {
+    const user = userEvent.setup();
+
+    renderDeckCard({ deck: createDeck({ cardCount: 0 }) });
+
+    await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
+
+    expect(
+      screen
+        .getByText("Review")
+        .closest("[role='menuitem']")
+        ?.getAttribute("data-disabled"),
+    ).not.toBeNull();
+  });
 });
