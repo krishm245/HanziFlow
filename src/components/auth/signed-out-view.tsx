@@ -17,7 +17,7 @@ function SignedOutView() {
         <div className="max-w-2xl">
           <p className="text-sm font-medium text-[#1f7a5a]">HanziFlow</p>
           <h1 className="mt-3 text-5xl font-semibold tracking-normal text-balance sm:text-6xl">
-            Build decks that keep characters moving.
+            Build decks that help you learn faster.
           </h1>
           <p className="text-muted-foreground mt-5 max-w-xl text-base leading-7">
             Create compact study decks for Chinese vocabulary, then fill them
@@ -35,7 +35,10 @@ function SignedOutView() {
         </CardHeader>
         <CardContent>
           <SignInButton mode="modal">
-            <Button className="w-full bg-[#183d32] hover:bg-[#245747]" size="lg">
+            <Button
+              className="w-full bg-[#183d32] hover:bg-[#245747]"
+              size="lg"
+            >
               Sign in
               <ArrowRight />
             </Button>
