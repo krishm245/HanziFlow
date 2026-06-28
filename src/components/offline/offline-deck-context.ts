@@ -4,6 +4,7 @@ import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import {
   getDownloadedDeckIds,
   getOfflineDeck,
+  getOfflineDecks,
   getPendingReviewEvents,
   queuePendingReviewEvent,
   removeOfflineDeck,
@@ -17,6 +18,7 @@ type OfflineDeckContextValue = {
   downloadedDeckIds: Set<string>;
   downloadDeck: (deck: Doc<"decks">, cards: Array<Doc<"cards">>) => void;
   getDownloadedDeck: (deckId: Id<"decks">) => ReturnType<typeof getOfflineDeck>;
+  getDownloadedDecks: () => ReturnType<typeof getOfflineDecks>;
   pendingCount: number;
   queueReview: (args: {
     cardId: Id<"cards">;
@@ -38,6 +40,7 @@ function useOfflineDecks() {
       downloadedDeckIds: getDownloadedDeckIds(),
       downloadDeck: saveOfflineDeck,
       getDownloadedDeck: getOfflineDeck,
+      getDownloadedDecks: getOfflineDecks,
       pendingCount: getPendingReviewEvents().length,
       queueReview: async (args: {
         cardId: Id<"cards">;

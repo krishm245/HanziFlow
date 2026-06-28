@@ -96,6 +96,12 @@ function getOfflineDeck(deckId: Id<"decks">, now = Date.now()) {
   return decks[deckId] ?? null;
 }
 
+function getOfflineDecks(now = Date.now()) {
+  return Object.values(pruneExpiredDecks(now)).sort(
+    (left, right) => right.deck.updatedAt - left.deck.updatedAt,
+  );
+}
+
 function getDownloadedDeckIds(now = Date.now()) {
   return new Set(Object.keys(pruneExpiredDecks(now)));
 }
@@ -169,6 +175,7 @@ export {
   clearOfflineStorage,
   getDownloadedDeckIds,
   getOfflineDeck,
+  getOfflineDecks,
   getPendingReviewEvents,
   queuePendingReviewEvent,
   removeOfflineDeck,

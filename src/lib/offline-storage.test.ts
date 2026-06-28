@@ -6,6 +6,7 @@ import {
   OFFLINE_TTL_MS,
   getDownloadedDeckIds,
   getOfflineDeck,
+  getOfflineDecks,
   getPendingReviewEvents,
   queuePendingReviewEvent,
   removeOfflineDeck,
@@ -55,6 +56,27 @@ describe("offline storage", () => {
 
     expect(getDownloadedDeckIds(1_000).has(deck._id)).toBe(true);
     expect(getOfflineDeck(deck._id, 1_000)?.cards).toEqual([card]);
+  });
+
+  it("lists downloaded decks newest first", () => {
+    const olderDeck = createDeck({
+      _id: "deck_old" as Id<"decks">,
+      name: "Older deck",
+      updatedAt: 1,
+    });
+    const newerDeck = createDeck({
+      _id: "deck_new" as Id<"decks">,
+      name: "Newer deck",
+      updatedAt: 2,
+    });
+
+    saveOfflineDeck(olderDeck, [createCard({ deckId: olderDeck._id })], 1_000);
+    saveOfflineDeck(newerDeck, [createCard({ deckId: newerDeck._id })], 1_000);
+
+    expect(getOfflineDecks(1_000).map(({ deck }) => deck.name)).toEqual([
+      "Newer deck",
+      "Older deck",
+    ]);
   });
 
   it("expires downloaded decks after seven days", () => {

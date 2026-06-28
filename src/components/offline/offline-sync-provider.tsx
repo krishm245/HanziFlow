@@ -12,13 +12,14 @@ import {
   clearOfflineStorage,
   getDownloadedDeckIds,
   getOfflineDeck,
+  getOfflineDecks,
   getPendingReviewEvents,
   queuePendingReviewEvent,
   removeOfflineDeck,
-  removePendingReviewEvents,
   saveOfflineDeck,
   subscribeToOfflineStorage,
 } from "@/lib/offline-storage";
+import { syncPendingReviewEvents } from "@/lib/sync-pending-reviews";
 import { useOnlineStatus } from "@/lib/use-online-status";
 
 function readSnapshot() {
@@ -36,8 +37,21 @@ function OfflineSyncProvider({ children }: { children: ReactNode }) {
   const [syncState, setSyncState] = useState<OfflineSyncState>("idle");
   const [syncError, setSyncError] = useState("");
   const hasHadSessionRef = useRef(false);
+  const syncInFlightRef = useRef(false);
 
-  useEffect(() => subscribeToOfflineStorage(() => setSnapshot(readSnapshot)), []);
+  useEffect(
+    () =>
+      subscribeToOfflineStorage(() => {
+        const nextSnapshot = readSnapshot();
+        setSnapshot(nextSnapshot);
+
+        if (nextSnapshot.pendingCount === 0) {
+          setSyncState("idle");
+          setSyncError("");
+        }
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (isSignedIn) {
@@ -52,45 +66,37 @@ function OfflineSyncProvider({ children }: { children: ReactNode }) {
   }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
-    if (!isOnline || !isSignedIn || syncState === "syncing") {
+    if (!isOnline || !isSignedIn || syncInFlightRef.current) {
       return;
     }
 
-    const pendingEvents = getPendingReviewEvents();
-    if (pendingEvents.length === 0) {
+    if (getPendingReviewEvents().length === 0) {
       return;
     }
 
     let cancelled = false;
 
     async function syncPendingReviews() {
+      syncInFlightRef.current = true;
       setSyncState("syncing");
       setSyncError("");
 
-      const syncedIds: string[] = [];
-
       try {
-        for (const event of pendingEvents) {
-          if (cancelled) {
-            return;
-          }
-
-          await recordReview({
-            cardId: event.cardId,
-            result: event.result,
-          });
-          syncedIds.push(event.id);
+        await syncPendingReviewEvents(recordReview);
+        if (!cancelled) {
+          setSyncState("idle");
         }
-
-        removePendingReviewEvents(syncedIds);
-        setSyncState("idle");
       } catch (caught) {
-        setSyncState("error");
-        setSyncError(
-          caught instanceof Error
-            ? caught.message
-            : "Could not sync offline reviews.",
-        );
+        if (!cancelled) {
+          setSyncState("error");
+          setSyncError(
+            caught instanceof Error
+              ? caught.message
+              : "Could not sync offline reviews.",
+          );
+        }
+      } finally {
+        syncInFlightRef.current = false;
       }
     }
 
@@ -99,13 +105,14 @@ function OfflineSyncProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isOnline, isSignedIn, recordReview, snapshot.pendingCount, syncState]);
+  }, [isOnline, isSignedIn, recordReview, snapshot.pendingCount]);
 
   const value = useMemo<OfflineDeckContextValue>(
     () => ({
       downloadedDeckIds: snapshot.downloadedDeckIds,
       downloadDeck: saveOfflineDeck,
       getDownloadedDeck: getOfflineDeck,
+      getDownloadedDecks: getOfflineDecks,
       pendingCount: snapshot.pendingCount,
       queueReview: async (args) => {
         queuePendingReviewEvent(args);
