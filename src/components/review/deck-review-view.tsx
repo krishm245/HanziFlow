@@ -3,7 +3,10 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Link, useParams } from "react-router";
 
 import { AppHeader } from "@/components/layout/app-header";
+import { OfflineStatusBanner } from "@/components/offline/offline-status-banner";
+import { useOfflineDecks } from "@/components/offline/offline-deck-context";
 import { Button } from "@/components/ui/button";
+import { useOnlineStatus } from "@/lib/use-online-status";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { ReviewSessionView } from "./review-session-view";
@@ -20,12 +23,29 @@ function DeckReviewView() {
     deck ? { deckId: deck._id } : "skip",
   );
   const recordReview = useMutation(api.cards.recordReview);
+  const isOnline = useOnlineStatus();
+  const { getDownloadedDeck, queueReview } = useOfflineDecks();
+  const offlineDeck = typedDeckId ? getDownloadedDeck(typedDeckId) : null;
+  const shouldUseOfflineDeck = Boolean(!isOnline && offlineDeck);
 
   return (
     <section className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-7 px-5 py-5 sm:px-8">
       <AppHeader />
+      <OfflineStatusBanner />
 
-      {deck === undefined || cards === undefined ? (
+      {shouldUseOfflineDeck && offlineDeck ? (
+        <ReviewSessionView
+          cards={offlineDeck.cards}
+          deck={offlineDeck.deck}
+          onRecordReview={async ({ cardId, result }) => {
+            await queueReview({
+              cardId,
+              deckId: offlineDeck.deck._id,
+              result,
+            });
+          }}
+        />
+      ) : deck === undefined || cards === undefined ? (
         <div className="text-muted-foreground flex min-h-60 items-center justify-center gap-2 rounded-lg border border-dashed text-sm">
           <Loader2 className="size-4 animate-spin" />
           Loading review

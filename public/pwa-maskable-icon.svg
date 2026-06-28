@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="HanziFlow">
+  <rect width="512" height="512" fill="#183d32" />
+  <path
+    d="M128 112h256c31 0 56 25 56 56v208c0 31-25 56-56 56H128c-31 0-56-25-56-56V168c0-31 25-56 56-56Z"
+    fill="#f6fbf8"
+  />
+  <path
+    d="M152 360c52-36 156-36 208 0"
+    fill="none"
+    stroke="#91b8a7"
+    stroke-linecap="round"
+    stroke-width="30"
+  />
+  <text
+    x="256"
+    y="300"
+    fill="#183d32"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="204"
+    font-weight="700"
+    text-anchor="middle"
+  >汉</text>
+  <path
+    d="M308 116 372 88"
+    fill="none"
+    stroke="#e36f5d"
+    stroke-linecap="round"
+    stroke-width="30"
+  />
+</svg>

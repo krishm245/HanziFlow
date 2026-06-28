@@ -1,13 +1,16 @@
 import {
   BookOpen,
+  Download,
   Loader2,
   MoreHorizontal,
   Pencil,
   Play,
   Trash2,
+  WifiOff,
 } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useConvex, useMutation } from "convex/react";
 import { Link, useNavigate } from "react-router";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
+import { useOfflineDecks } from "@/components/offline/offline-deck-context";
 import { DeleteDeckDialog } from "./delete-deck-dialog";
 import { formatCardCount } from "./deck-display";
 import { RenameDeckDialog } from "./rename-deck-dialog";
@@ -44,8 +48,16 @@ type RenameDeck = (args: {
 type RemoveDeck = (args: { deckId: Id<"decks"> }) => Promise<unknown>;
 
 function DeckList({ action, decks }: DeckListProps) {
+  const convex = useConvex();
   const renameDeck = useMutation(api.decks.rename);
   const removeDeck = useMutation(api.decks.remove);
+  const { downloadDeck, downloadedDeckIds, removeDownloadedDeck } =
+    useOfflineDecks();
+
+  async function downloadDeckForOffline(deck: Doc<"decks">) {
+    const cards = await convex.query(api.cards.listByDeck, { deckId: deck._id });
+    downloadDeck(deck, cards);
+  }
 
   return (
     <section className="grid gap-4">
@@ -73,7 +85,10 @@ function DeckList({ action, decks }: DeckListProps) {
           {decks.map((deck) => (
             <DeckCard
               deck={deck}
+              isOfflineAvailable={downloadedDeckIds.has(deck._id)}
               key={deck._id}
+              onDownloadDeck={downloadDeckForOffline}
+              onRemoveOfflineDeck={removeDownloadedDeck}
               onRemoveDeck={removeDeck}
               onRenameDeck={renameDeck}
             />
@@ -87,9 +102,15 @@ function DeckList({ action, decks }: DeckListProps) {
 function DeckCard({
   deck,
   onRemoveDeck,
+  onRemoveOfflineDeck,
   onRenameDeck,
+  onDownloadDeck,
+  isOfflineAvailable = false,
 }: {
   deck: Doc<"decks">;
+  isOfflineAvailable?: boolean;
+  onDownloadDeck?: (deck: Doc<"decks">) => Promise<void>;
+  onRemoveOfflineDeck?: (deckId: Id<"decks">) => void;
   onRemoveDeck: RemoveDeck;
   onRenameDeck: RenameDeck;
 }) {
@@ -108,6 +129,9 @@ function DeckCard({
           <div className="pointer-events-auto">
             <DeckActions
               deck={deck}
+              isOfflineAvailable={isOfflineAvailable}
+              onDownloadDeck={onDownloadDeck}
+              onRemoveOfflineDeck={onRemoveOfflineDeck}
               onRemoveDeck={onRemoveDeck}
               onRenameDeck={onRenameDeck}
             />
@@ -117,8 +141,8 @@ function DeckCard({
         <CardDescription>{formatCardCount(deck.cardCount)}</CardDescription>
       </CardHeader>
       <CardContent className="pointer-events-none relative z-20 mt-auto">
-        <div className="flex items-center justify-between border-t border-[#d8e7df] pt-4 text-xs text-[#49675b]">
-          <span>Last updated</span>
+        <div className="flex items-center justify-between gap-3 border-t border-[#d8e7df] pt-4 text-xs text-[#49675b]">
+          <span>{isOfflineAvailable ? "Available offline" : "Last updated"}</span>
           <time dateTime={new Date(deck.updatedAt).toISOString()}>
             {new Date(deck.updatedAt).toLocaleDateString()}
           </time>
@@ -130,14 +154,35 @@ function DeckCard({
 
 function DeckActions({
   deck,
+  isOfflineAvailable,
+  onDownloadDeck,
+  onRemoveOfflineDeck,
   onRemoveDeck,
   onRenameDeck,
 }: {
   deck: Doc<"decks">;
+  isOfflineAvailable: boolean;
+  onDownloadDeck?: (deck: Doc<"decks">) => Promise<void>;
+  onRemoveOfflineDeck?: (deckId: Id<"decks">) => void;
   onRemoveDeck: RemoveDeck;
   onRenameDeck: RenameDeck;
 }) {
   const navigate = useNavigate();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  async function handleDownloadDeck() {
+    if (!onDownloadDeck) {
+      return;
+    }
+
+    setIsDownloading(true);
+
+    try {
+      await onDownloadDeck(deck);
+    } finally {
+      setIsDownloading(false);
+    }
+  }
 
   return (
     <RenameDeckDialog deck={deck} onRenameDeck={onRenameDeck}>
@@ -164,6 +209,26 @@ function DeckActions({
                   <Play />
                   Review
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {isOfflineAvailable ? (
+                  <DropdownMenuItem
+                    onSelect={() => onRemoveOfflineDeck?.(deck._id)}
+                  >
+                    <WifiOff />
+                    Remove offline
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    disabled={!onDownloadDeck || deck.cardCount === 0 || isDownloading}
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      void handleDownloadDeck();
+                    }}
+                  >
+                    <Download />
+                    {isDownloading ? "Downloading" : "Download for offline"}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={openRenameDialog}>
                   <Pencil />

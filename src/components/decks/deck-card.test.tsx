@@ -216,4 +216,51 @@ describe("DeckCard", () => {
         ?.getAttribute("data-disabled"),
     ).not.toBeNull();
   });
+
+  it("downloads a deck for offline review from the actions menu", async () => {
+    const user = userEvent.setup();
+    const deck = createDeck();
+    const downloadDeck = vi.fn(async () => {});
+
+    render(
+      <MemoryRouter>
+        <DeckCard
+          deck={deck}
+          onDownloadDeck={downloadDeck}
+          onRemoveDeck={async () => {}}
+          onRenameDeck={async () => {}}
+        />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
+    await user.click(screen.getByText("Download for offline"));
+
+    expect(downloadDeck).toHaveBeenCalledWith(deck);
+  });
+
+  it("shows remove offline action for downloaded decks", async () => {
+    const user = userEvent.setup();
+    const deck = createDeck();
+    const removeOfflineDeck = vi.fn();
+
+    render(
+      <MemoryRouter>
+        <DeckCard
+          deck={deck}
+          isOfflineAvailable
+          onRemoveDeck={async () => {}}
+          onRemoveOfflineDeck={removeOfflineDeck}
+          onRenameDeck={async () => {}}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Available offline")).not.toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Manage HSK 1 verbs" }));
+    await user.click(screen.getByText("Remove offline"));
+
+    expect(removeOfflineDeck).toHaveBeenCalledWith(deck._id);
+  });
 });
